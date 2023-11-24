@@ -6,13 +6,14 @@ import numpy as np
 # ---- ЗАДАНИЕ_1 ----
 def prog1():  # Первая программа
     colors = Image.open(input("Введите путь к изображению\n")).getcolors(1)[0][1]  # Получение массива цветов
-    if colors[0] == 255:
+    colors = colors[:len(colors) - 1] # Удаление лишнего элемента из множества цветов
+    n = np.argmax(colors)
+    if n == 0: # Вывод взвешенного канала
         print("R")
-    elif colors[1] == 255:
+    elif n == 1:
         print("G")
-    elif colors[2] == 255:
+    elif n == 2:
         print("B")
-
 
 # Функция обводки и подписи по маске - применяется в 2 и 3 заданиях
 def rect(mask, colorname, frame):
@@ -139,6 +140,7 @@ def train4():
         x_train, # Датасет с изображениями
         y_train, # Датасет с расшифровкой изображений
         epochs=50,
+        validation_data=(x_test, y_test), # Датасет с тестовыми изображениями
         callbacks=[cp_callback] # Сохранение весов в файл
     )
 
@@ -168,7 +170,7 @@ def prog4():
 
 # ---- ИНТЕРФЕЙС_ПРОВЕРКИ_ЗАДАНИЙ ----
 while True:
-    uinput = input("Введите номер задания (1-4), нажмите 0 для выхода или 5 для переобучения модели 4 задания\n")
+    uinput = input("Введите номер задания (1-4), 0 для выхода или 5 для переобучения модели из 4 задания\n")
     if uinput == "1":
         prog1()
     elif uinput == "2":
