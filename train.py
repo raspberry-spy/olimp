@@ -1,50 +1,33 @@
 import tensorflow as tf
-import tensorflow_datasets as tfds
-
-(ds_train, ds_test), ds_info = tfds.load(
-    'mnist',
-    split=['train', 'test'],
-    shuffle_files=True,
-    as_supervised=True,
-    with_info=True,
-)
-
+from tensorflow.keras.datasets import mnist
+# Загрузка и нормализация датасета
+(x_train, y_train), (x_test, y_test) = mnist.load_data()
+x_train, x_test = x_train / 255.0, x_test / 255.0
+# Функция сохранения весов в файл
 cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath='cp/cp.ckpt',
                                                  save_weights_only=True,
                                                  verbose=1)
 
-
-def normalize_img(image, label):
-    return tf.cast(image, tf.float32) / 255., label
-
-
-ds_train = ds_train.map(
-    normalize_img, num_parallel_calls=tf.data.AUTOTUNE)
-ds_train = ds_train.cache()
-ds_train = ds_train.shuffle(ds_info.splits['train'].num_examples)
-ds_train = ds_train.batch(128)
-ds_train = ds_train.prefetch(tf.data.AUTOTUNE)
-
-ds_test = ds_test.map(
-    normalize_img, num_parallel_calls=tf.data.AUTOTUNE)
-ds_test = ds_test.batch(128)
-ds_test = ds_test.cache()
-ds_test = ds_test.prefetch(tf.data.AUTOTUNE)
-
+# Задание формы модели (стек слоев)
 model = tf.keras.models.Sequential([
+    # первый слой сети - преобразует формат изображений в одномерный массив 28 * 28 = 784 пикселей
     tf.keras.layers.Flatten(input_shape=(28, 28)),
+    # второй слой = 128 узлов (нейронов)
     tf.keras.layers.Dense(128, activation='relu'),
+    # третий слой (выходной) = 10 узлов (нейронов)
     tf.keras.layers.Dense(10)
 ])
+
 model.compile(
+    # 
     optimizer=tf.keras.optimizers.Adam(0.001),
     loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
     metrics=[tf.keras.metrics.SparseCategoricalAccuracy()],
 )
 
 model.fit(
-    ds_train,
+    x_train,
+    y_train,
     epochs=50,
-    validation_data=ds_test,
     callbacks=[cp_callback]
 )

@@ -1,1 +1,3 @@
 tensorflow
+Pillow
+opencv-python
